@@ -1,16 +1,15 @@
-## Hi there 👋
-
-<!--
-**warmenhoven/warmenhoven** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-
-Here are some ideas to get you started:
+## OK I guess?
 
 - 🔭 I’m currently working on ...
+  - [RetroArch](https://github.com/libretro/RetroArch) and various libretro emulator cores, mostly on macOS/iOS/tvOS
 - 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
+  - Hardware emulation
+  - Dynamic recompilation / interpreters
+  - Graphics programming (especially Vulkan and [MoltenVK](http://github.com/KhronosGroup/MoltenVK))
+  - Apple programming
 - 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
+  - ??? I don't know, whatever.
+- 📫 How to reach me:
+  - [libretro Discord](https://discord.gg/C8zv3eKADt) as @warmenhoven
 - ⚡ Fun fact: ...
--->
+  - I love [RetroAchievements](https://retroachievements.org/user/warmenhoven), but most of the games I'm "playing" on there, I'm actually just testing RetroArch or some emulator.
