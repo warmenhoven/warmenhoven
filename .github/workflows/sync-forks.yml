@@ -50,6 +50,7 @@ jobs:
         with:
           name: synced-forks
           path: forks.tsv
+          compression-level: 0
 
 concurrency:
   group: fork-sync
