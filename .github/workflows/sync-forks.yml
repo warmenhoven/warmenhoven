@@ -1,0 +1,56 @@
+name: Sync all forks
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+    inputs:
+      include_regex:
+        description: "Optional regex to limit repos by nameWithOwner"
+        required: false
+        default: ""
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}  # required for gh CLI in Actions
+    steps:
+      - name: List fork repos
+        id: list
+        run: |
+          gh repo list "${{ github.actor }}" --fork -L 1000 \
+            --json nameWithOwner,defaultBranchRef,parent,isArchived \
+            --jq '.[] | select(.parent != null and (.isArchived|not)) | [.nameWithOwner, .defaultBranchRef.name] | @tsv' \
+            > forks.tsv
+
+          if [ -n "${{ inputs.include_regex }}" ]; then
+            grep -E "${{ inputs.include_regex }}" forks.tsv > forks.filtered.tsv || true
+            mv forks.filtered.tsv forks.tsv
+          fi
+
+          echo "Found $(wc -l < forks.tsv) fork repos to sync"
+          cat forks.tsv
+
+      - name: Sync each fork default branch from upstream
+        run: |
+          while IFS=$'\t' read -r REPO DEFBRANCH; do
+            [ -z "$REPO" ] && continue
+            echo "::group::Syncing $REPO on branch $DEFBRANCH"
+            # If already up to date, API returns success with a message. If conflicts, it returns 409.
+            gh api -X POST "repos/$REPO/merge-upstream" -f branch="$DEFBRANCH" \
+              && echo "Synced $REPO" \
+              || echo "Skipped $REPO due to conflict or error"
+            echo "::endgroup::"
+          done < forks.tsv
+
+      - name: Upload repo list
+        uses: actions/upload-artifact@v4
+        with:
+          name: synced-forks
+          path: forks.tsv
+
+concurrency:
+  group: fork-sync
+  cancel-in-progress: false
