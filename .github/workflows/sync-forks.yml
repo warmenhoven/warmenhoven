@@ -21,8 +21,8 @@ jobs:
         id: list
         run: |
           gh repo list "${{ github.actor }}" --fork -L 1000 \
-            --json nameWithOwner,defaultBranchRef,parent,isArchived \
-            --jq '.[] | select(.parent != null and (.isArchived|not)) | [.nameWithOwner, .defaultBranchRef.name] | @tsv' \
+            --json nameWithOwner,defaultBranchRef,isArchived \
+            --jq '.[] | select(.isArchived|not) | [.nameWithOwner, .defaultBranchRef.name] | @tsv' \
             > forks.tsv
 
           if [ -n "${{ inputs.include_regex }}" ]; then
