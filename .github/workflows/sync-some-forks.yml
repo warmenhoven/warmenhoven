@@ -1,0 +1,27 @@
+name: Sync some forks
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}  # required for gh CLI in Actions
+    steps:
+      - name: Sync each fork default branch from upstream
+        run: |
+          echo "::group::Syncing $REPO on branch $DEFBRANCH"
+          # If already up to date, API returns success with a message. If conflicts, it returns 409.
+          gh api -X POST "repos/warmenhoven/RetroArch/merge-upstream" -f branch="master" \
+            && echo "Synced warmenhoven/RetroArch" \
+            || echo "Skipped warmenhoven/RetroArch due to conflict or error"
+          echo "::endgroup::"
+
+concurrency:
+  group: fork-sync
+  cancel-in-progress: false
