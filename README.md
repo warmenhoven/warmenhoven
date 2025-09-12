@@ -13,3 +13,4 @@
   - [libretro Discord](https://discord.gg/C8zv3eKADt) as @warmenhoven
 - ⚡ Fun fact: ...
   - I love [RetroAchievements](https://retroachievements.org/user/warmenhoven), but most of the games I'm "playing" on there, I'm actually just testing RetroArch or some emulator.
+  - My PFP is the avatar from [Haunted House](https://en.wikipedia.org/wiki/Haunted_House_(video_game))
