@@ -1,7 +1,7 @@
 ## OK I guess?
 
 - 🔭 I’m currently working on ...
-  - [RetroArch](https://github.com/libretro/RetroArch) and various libretro emulator cores, mostly on macOS/iOS/tvOS
+  - [RetroArch](https://github.com/libretro/RetroArch) and various [libretro cores](https://github.com/orgs/libretro/repositories), mostly on macOS/iOS/tvOS
 - 🌱 I’m currently learning ...
   - Hardware emulation
   - Dynamic recompilation / interpreters
