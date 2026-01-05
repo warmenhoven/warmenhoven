@@ -13,13 +13,8 @@ I make old games run on new things.
 ![Vulkan](https://img.shields.io/badge/Vulkan-AC162C?logo=vulkan&logoColor=white)
 
 **Find me:**
+- [warmenhoven.github.io](https://warmenhoven.github.io)
 - [libretro Discord](https://discord.gg/C8zv3eKADt) as @warmenhoven
 - [RetroAchievements](https://retroachievements.org/user/warmenhoven) (half my "plays" are just testing)
-
----
-
-<img src="https://github-readme-stats.vercel.app/api?username=warmenhoven&show_icons=true&theme=dark&hide_border=true" alt="GitHub stats" />
-
----
 
 *PFP: the eyes from [Haunted House](https://en.wikipedia.org/wiki/Haunted_House_(video_game))*
