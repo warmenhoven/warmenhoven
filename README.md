@@ -5,6 +5,9 @@ I make old games run on new things.
 **Currently into:**
 - Emulation on Apple platforms (macOS/iOS/tvOS)
 - [RetroArch](https://github.com/libretro/RetroArch) & [libretro cores](https://github.com/orgs/libretro/repositories)
+  - [Ymir](https://github.com/warmenhoven/Ymir) (Sega Saturn)
+  - [amiarcadia](https://github.com/warmenhoven/amiarcadia) (Arcadia 2001 / Interton VC 4000)
+  - [azahar](https://github.com/azahar-emu/azahar) (Nintendo 3DS, derived from the [citra](https://github.com/libretro/citra) core)
 - Graphics programming with [Vulkan](https://github.com/KhronosGroup/Vulkan-Headers) and [MoltenVK](https://github.com/KhronosGroup/MoltenVK)
 - JIT compilers and dynamic recompilation
 
