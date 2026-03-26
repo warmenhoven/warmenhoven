@@ -37,10 +37,13 @@ jobs:
           }
 
           # Use REST API instead of GraphQL (gh repo list) for reliability
-          retry gh api "users/${{ github.actor }}/repos?type=forks&per_page=100&sort=full_name" \
-            --paginate \
-            --jq '.[] | select(.fork and (.archived|not)) | [.full_name, .default_branch] | @tsv' \
-            > forks.tsv
+          list_forks() {
+            gh api "users/${{ github.actor }}/repos?type=forks&per_page=100&sort=full_name" \
+              --paginate \
+              --jq '.[] | select(.fork and (.archived|not)) | [.full_name, .default_branch] | @tsv' \
+              > forks.tsv
+          }
+          retry list_forks
 
           if [ -n "${{ inputs.include_regex }}" ]; then
             grep -E "${{ inputs.include_regex }}" forks.tsv > forks.filtered.tsv || true
@@ -87,11 +90,9 @@ jobs:
           while IFS=$'\t' read -r REPO DEFBRANCH; do
             [ -z "$REPO" ] && continue
             echo "::group::Syncing $REPO on branch $DEFBRANCH"
-            sync_fork "$REPO" "$DEFBRANCH"
-            rc=$?
-            if [ $rc -eq 0 ]; then
+            if sync_fork "$REPO" "$DEFBRANCH"; then
               echo "Synced $REPO"
-            elif [ $rc -eq 2 ]; then
+            elif [ $? -eq 2 ]; then
               echo "::warning::Skipped $REPO (conflict or permission error)"
             elif retry sync_fork "$REPO" "$DEFBRANCH"; then
               echo "Synced $REPO (after retry)"
