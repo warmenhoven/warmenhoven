@@ -37,8 +37,7 @@ jobs:
           }
 
           # Use REST API instead of GraphQL (gh repo list) for reliability
-          # Use /user/repos (authenticated) to include private forks
-          retry gh api "user/repos?affiliation=owner&per_page=100&sort=full_name" \
+          retry gh api "users/${{ github.actor }}/repos?type=forks&per_page=100&sort=full_name" \
             --paginate \
             --jq '.[] | select(.fork and (.archived|not)) | [.full_name, .default_branch] | @tsv' \
             > forks.tsv
@@ -70,12 +69,32 @@ jobs:
             return 1
           }
 
+          sync_fork() {
+            local output
+            output=$(gh api -X POST "repos/$1/merge-upstream" -f branch="$2" 2>&1)
+            local rc=$?
+            echo "$output"
+            if [ $rc -ne 0 ]; then
+              # Don't retry conflicts or permission errors
+              case "$output" in
+                *"409"*|*"403"*|*"404"*) return 2 ;;
+              esac
+            fi
+            return $rc
+          }
+
           failed=0
           while IFS=$'\t' read -r REPO DEFBRANCH; do
             [ -z "$REPO" ] && continue
             echo "::group::Syncing $REPO on branch $DEFBRANCH"
-            if retry gh api -X POST "repos/$REPO/merge-upstream" -f branch="$DEFBRANCH"; then
+            sync_fork "$REPO" "$DEFBRANCH"
+            rc=$?
+            if [ $rc -eq 0 ]; then
               echo "Synced $REPO"
+            elif [ $rc -eq 2 ]; then
+              echo "::warning::Skipped $REPO (conflict or permission error)"
+            elif retry sync_fork "$REPO" "$DEFBRANCH"; then
+              echo "Synced $REPO (after retry)"
             else
               echo "::warning::Failed to sync $REPO after retries"
               failed=1
