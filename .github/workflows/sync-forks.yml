@@ -36,9 +36,11 @@ jobs:
             return 1
           }
 
-          retry gh repo list "${{ github.actor }}" --fork -L 1000 \
-            --json nameWithOwner,defaultBranchRef,isArchived \
-            --jq '.[] | select(.isArchived|not) | [.nameWithOwner, .defaultBranchRef.name] | @tsv' \
+          # Use REST API instead of GraphQL (gh repo list) for reliability
+          # Use /user/repos (authenticated) to include private forks
+          retry gh api "user/repos?affiliation=owner&per_page=100&sort=full_name" \
+            --paginate \
+            --jq '.[] | select(.fork and (.archived|not)) | [.full_name, .default_branch] | @tsv' \
             > forks.tsv
 
           if [ -n "${{ inputs.include_regex }}" ]; then
