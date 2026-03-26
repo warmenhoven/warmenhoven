@@ -1,7 +1,7 @@
 name: Sync all forks
 on:
   schedule:
-    - cron: "17 6 * * *"
+    - cron: "17 */6 * * *"
   workflow_dispatch:
     inputs:
       include_regex:
@@ -19,8 +19,24 @@ jobs:
     steps:
       - name: List fork repos
         id: list
+        continue-on-error: true
         run: |
-          gh repo list "${{ github.actor }}" --fork -L 1000 \
+          retry() {
+            local attempt max_attempts=4 delay=15
+            for attempt in $(seq 1 $max_attempts); do
+              if "$@"; then
+                return 0
+              fi
+              if [ "$attempt" -lt "$max_attempts" ]; then
+                echo "::warning::Attempt $attempt/$max_attempts failed, retrying in ${delay}s..."
+                sleep "$delay"
+                delay=$((delay * 2))
+              fi
+            done
+            return 1
+          }
+
+          retry gh repo list "${{ github.actor }}" --fork -L 1000 \
             --json nameWithOwner,defaultBranchRef,isArchived \
             --jq '.[] | select(.isArchived|not) | [.nameWithOwner, .defaultBranchRef.name] | @tsv' \
             > forks.tsv
@@ -34,23 +50,72 @@ jobs:
           cat forks.tsv
 
       - name: Sync each fork default branch from upstream
+        id: sync
+        if: steps.list.outcome == 'success'
         run: |
+          retry() {
+            local attempt max_attempts=4 delay=15
+            for attempt in $(seq 1 $max_attempts); do
+              if "$@"; then
+                return 0
+              fi
+              if [ "$attempt" -lt "$max_attempts" ]; then
+                echo "::warning::Attempt $attempt/$max_attempts failed, retrying in ${delay}s..."
+                sleep "$delay"
+                delay=$((delay * 2))
+              fi
+            done
+            return 1
+          }
+
+          failed=0
           while IFS=$'\t' read -r REPO DEFBRANCH; do
             [ -z "$REPO" ] && continue
             echo "::group::Syncing $REPO on branch $DEFBRANCH"
-            # If already up to date, API returns success with a message. If conflicts, it returns 409.
-            gh api -X POST "repos/$REPO/merge-upstream" -f branch="$DEFBRANCH" \
-              && echo "Synced $REPO" \
-              || echo "Skipped $REPO due to conflict or error"
+            if retry gh api -X POST "repos/$REPO/merge-upstream" -f branch="$DEFBRANCH"; then
+              echo "Synced $REPO"
+            else
+              echo "::warning::Failed to sync $REPO after retries"
+              failed=1
+            fi
             echo "::endgroup::"
           done < forks.tsv
 
+          echo "failed=$failed" >> "$GITHUB_OUTPUT"
+
       - name: Upload repo list
+        if: steps.list.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: synced-forks
           path: forks.tsv
           compression-level: 0
+
+      - name: Fail only if broken for over a day
+        if: steps.list.outcome == 'failure' || steps.sync.outputs.failed == '1'
+        run: |
+          # Check when this workflow last succeeded
+          last_success=$(gh api \
+            "repos/${{ github.repository }}/actions/workflows/sync-forks.yml/runs?status=success&per_page=1" \
+            --jq '.workflow_runs[0].updated_at // empty' 2>/dev/null || true)
+
+          if [ -z "$last_success" ]; then
+            echo "::error::No successful run found — failing"
+            exit 1
+          fi
+
+          last_epoch=$(date -d "$last_success" +%s 2>/dev/null || date -jf "%Y-%m-%dT%H:%M:%SZ" "$last_success" +%s)
+          now_epoch=$(date +%s)
+          hours_ago=$(( (now_epoch - last_epoch) / 3600 ))
+
+          echo "Last successful run: $last_success ($hours_ago hours ago)"
+
+          if [ "$hours_ago" -ge 24 ]; then
+            echo "::error::Sync has been failing for ${hours_ago} hours (>24h) — check GitHub API status"
+            exit 1
+          fi
+
+          echo "::warning::Sync had failures but last success was only ${hours_ago}h ago — suppressing failure"
 
 concurrency:
   group: fork-sync
