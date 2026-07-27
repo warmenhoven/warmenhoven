@@ -8,6 +8,7 @@ I make old games run on new things.
   - [Ymir](https://github.com/warmenhoven/Ymir) (Sega Saturn)
   - [amiarcadia](https://github.com/warmenhoven/amiarcadia) (Arcadia 2001 / Interton VC 4000)
   - [azahar](https://github.com/azahar-emu/azahar) (Nintendo 3DS, derived from the [citra](https://github.com/libretro/citra) core)
+  - [tia](https://github.com/warmenhoven/tia) (Atari 2600)
 - Graphics programming with [Vulkan](https://github.com/KhronosGroup/Vulkan-Headers) and [MoltenVK](https://github.com/KhronosGroup/MoltenVK)
 - JIT compilers and dynamic recompilation
 
