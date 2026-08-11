@@ -4,7 +4,7 @@ I make old games run on new things.
 
 **Currently into:**
 - Emulation on Apple platforms (macOS/iOS/tvOS)
-- [RetroArch](https://github.com/libretro/RetroArch) & [libretro cores](https://github.com/orgs/libretro/repositories)
+- libretro cores
   - [Ymir](https://github.com/warmenhoven/Ymir) (Sega Saturn)
   - [amiarcadia](https://github.com/warmenhoven/amiarcadia) (Arcadia 2001 / Interton VC 4000)
   - [azahar](https://github.com/azahar-emu/azahar) (Nintendo 3DS, derived from the [citra](https://github.com/libretro/citra) core)
@@ -18,7 +18,6 @@ I make old games run on new things.
 
 **Find me:**
 - [warmenhoven.github.io](https://warmenhoven.github.io)
-- [libretro Discord](https://discord.gg/C8zv3eKADt) as @warmenhoven
 - [RetroAchievements](https://retroachievements.org/user/warmenhoven) (half my "plays" are just testing)
 
 *PFP: the eyes from [Haunted House](https://en.wikipedia.org/wiki/Haunted_House_(video_game))*
