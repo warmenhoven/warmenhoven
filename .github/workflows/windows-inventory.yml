@@ -1,0 +1,48 @@
+name: windows-inventory
+
+on:
+  workflow_dispatch:
+
+jobs:
+  inventory:
+    runs-on: windows-2025
+    steps:
+      - name: make, anywhere
+        shell: cmd
+        run: |
+          echo === make on PATH ===
+          where make 2>nul || echo "make: NOT on PATH"
+          echo === msys2 make ===
+          if exist C:\msys64\usr\bin\make.exe (echo FOUND C:\msys64\usr\bin\make.exe) else (echo absent: C:\msys64\usr\bin\make.exe)
+          if exist C:\msys64\mingw64\bin\mingw32-make.exe (echo FOUND mingw32-make) else (echo absent: mingw32-make)
+          echo === git bash ===
+          if exist "C:\Program Files\Git\usr\bin\make.exe" (echo FOUND git-bash make) else (echo absent: git-bash make)
+
+      - name: what the Makefiles also need
+        shell: cmd
+        run: |
+          for %%T in (sh.exe bash.exe cygpath.exe sed.exe grep.exe awk.exe) do @(
+            if exist C:\msys64\usr\bin\%%T (echo msys2 has %%T) else (echo msys2 MISSING %%T)
+          )
+
+      - name: msys2 installed packages
+        shell: cmd
+        continue-on-error: true
+        run: |
+          C:\msys64\usr\bin\pacman.exe -Qq
+
+      - name: msvc toolsets
+        shell: cmd
+        run: |
+          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property catalog_productDisplayVersion
+          echo === host/target toolsets ===
+          for /d %%V in ("C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\*") do @dir /b "%%V\bin"
+
+      - name: other build tools present
+        shell: cmd
+        continue-on-error: true
+        run: |
+          cmake --version
+          ninja --version
+          python --version
