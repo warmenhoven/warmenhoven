@@ -2,10 +2,16 @@ name: windows-inventory
 
 on:
   workflow_dispatch:
+    inputs:
+      runner:
+        description: Which runner image to inventory
+        type: choice
+        default: windows-2025
+        options: [windows-2025, windows-2022, windows-11-arm, windows-latest]
 
 jobs:
   inventory:
-    runs-on: windows-2025
+    runs-on: ${{ inputs.runner }}
     steps:
       - name: make, anywhere
         shell: cmd
@@ -31,13 +37,29 @@ jobs:
         run: |
           C:\msys64\usr\bin\pacman.exe -Qq
 
+      - name: every visual studio instance
+        shell: cmd
+        run: |
+          echo === all instances (-all, no -latest: -latest hides older ones) ===
+          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -products * -all ^
+            -format value -property installationPath
+          echo === with versions ===
+          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -products * -all ^
+            -format value -property catalog_productDisplayVersion
+          echo === visual studio directories on disk ===
+          dir /b "C:\Program Files\Microsoft Visual Studio" 2>nul
+          dir /b "C:\Program Files (x86)\Microsoft Visual Studio" 2>nul
+
       - name: msvc toolsets
         shell: cmd
         run: |
-          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
-          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property catalog_productDisplayVersion
           echo === host/target toolsets ===
-          for /d %%V in ("C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\*") do @dir /b "%%V\bin"
+          for /f "usebackq delims=" %%P in (`"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -products * -all -format value -property installationPath`) do @(
+            echo --- %%P ---
+            for /d %%V in ("%%P\VC\Tools\MSVC\*") do @(echo toolset %%~nxV & dir /b "%%V\bin")
+          )
+          echo === windows sdks ===
+          dir /b "C:\Program Files (x86)\Windows Kits\10\Include" 2>nul
 
       - name: other build tools present
         shell: cmd
