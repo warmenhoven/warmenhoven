@@ -1,0 +1,42 @@
+name: windows-core
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        type: choice
+        default: windows-2022
+        options: [windows-2022, windows-2025]
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: warmenhoven/tia
+          path: tia
+
+      - name: locate visual studio
+        id: vs
+        shell: cmd
+        run: |
+          for /f "usebackq delims=" %%P in (`"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath`) do @echo vs=%%P>>%GITHUB_OUTPUT%
+
+      - name: build tia with msvc
+        shell: bash
+        env:
+          VS_PATH: ${{ steps.vs.outputs.vs }}
+        run: |
+          set -x
+          export PATH="/c/msys64/usr/bin:/c/mingw64/bin:$PATH"
+          # The Makefile only looks for VS 2017 under Program Files (x86), so
+          # point it at whatever vswhere found.
+          export VsInstallRoot="$(cygpath -u "$VS_PATH")"
+          cd tia
+          make platform=windows_msvc2017_desktop_x64 -j2
+
+      - name: what came out
+        if: always()
+        shell: bash
+        run: ls -l tia/*.dll tia/*.lib 2>/dev/null || echo "(nothing produced)"
