@@ -30,11 +30,20 @@ jobs:
         run: |
           set -x
           export PATH="/c/msys64/usr/bin:/c/mingw64/bin:$PATH"
-          # The Makefile only looks for VS 2017 under Program Files (x86), so
-          # point it at whatever vswhere found.
           export VsInstallRoot="$(cygpath -u "$VS_PATH")"
+
+          # The runner's make is mingw32-make, a native Windows make. The
+          # Makefile rewrites PATH into unix form for MSYS2's make, which
+          # CreateProcess cannot parse. A command-line PATH cannot be
+          # overridden by the makefile, so set it here in Windows form.
+          ver="$(cat "$VsInstallRoot/VC/Auxiliary/Build/Microsoft.VCToolsVersion.default.txt" | tr -d '[:space:]')"
+          clbin="$(cygpath -w "$VsInstallRoot/VC/Tools/MSVC/$ver/bin/HostX64/x64")"
+          echo "toolset $ver"
+          ls "$(cygpath -u "$clbin")/cl.exe"
+
           cd tia
-          make platform=windows_msvc2017_desktop_x64 -j2
+          make platform=windows_msvc2017_desktop_x64 -j2 \
+               PATH="$clbin;$(cygpath -w /c/msys64/usr/bin);$(cygpath -w /c/mingw64/bin);C:\\Windows\\system32"
 
       - name: what came out
         if: always()
