@@ -1,7 +1,5 @@
 name: Sync some forks
 on:
-  schedule:
-    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 
