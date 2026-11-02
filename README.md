@@ -17,7 +17,7 @@ I make old games run on new things.
 ![Vulkan](https://img.shields.io/badge/Vulkan-AC162C?logo=vulkan&logoColor=white)
 
 **Find me:**
-- [warmenhoven.github.io](https://warmenhoven.github.io)
+- [warmenhoven.org](https://www.warmenhoven.org)
 - [RetroAchievements](https://retroachievements.org/user/warmenhoven) (half my "plays" are just testing)
 
 *PFP: the eyes from [Haunted House](https://en.wikipedia.org/wiki/Haunted_House_(video_game))*
